@@ -1,0 +1,17 @@
+<main id="main">
+  <div class="game">
+    <div>
+      <p>You picked</p>
+
+      <div class="choice {{ .choice }}">
+        <choice-button choice="{{ .choice }}"></choice-button>
+      </div>
+    </div>
+    <div>
+      <p>The house picked</p>
+
+      <div class="house-pick" hx-get="/result" hx-trigger="every 3s">
+      </div>
+    </div>
+  </div>
+</main>

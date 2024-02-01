@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- displays site properly based on user's device -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
+  <title>{{ .title }}</title>
+  <script src="https://unpkg.com/htmx.org@1.9.10"
+    integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../styles/styles.css" />
+</head>
+
+<body>
+  <header class="score-header">
+    <img src="../images/logo.svg" alt="logo" />
+    <div class="score">
+      <p>score</p>
+      <span id="score-value">12</span>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container">
+      <div class="choice paper">
+        <choice-button choice="paper"></choice-button>
+      </div>
+      <div class="choice scissors">
+        <choice-button choice="scissors"></choice-button>
+      </div>
+      <div class="choice rock botton-item">
+        <choice-button choice="rock"></choice-button>
+      </div>
+    </div>
+  </main>
+
+  <script src="../components/choice-button.js"></script>
+</body>
+
+</html>

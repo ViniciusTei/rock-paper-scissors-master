@@ -1,0 +1,214 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+:root {
+  --sm: 375px;
+  --md: 675px;
+  --lg: 1366px;
+
+/* ### Primary */
+/**/
+/* - Scissors Gradient: hsl(39, 89%, 49%) to hsl(40, 84%, 53%) */
+/* - Paper Gradient: hsl(230, 89%, 62%) to hsl(230, 89%, 65%) */
+/* - Rock Gradient: hsl(349, 71%, 52%) to hsl(349, 70%, 56%) */
+/* - Lizard Gradient: hsl(261, 73%, 60%) to hsl(261, 72%, 63%) */
+/* - Cyan: hsl(189, 59%, 53%) to hsl(189, 58%, 57%) */
+/**/
+/* ### Neutral */
+/**/
+/* - Dark Text: hsl(229, 25%, 31%) */
+/* - Score Text: hsl(229, 64%, 46%) */
+/* - Header Outline: hsl(217, 16%, 45%) */
+/**/
+/* ### Background */
+/**/
+/* - Radial Gradient: hsl(214, 47%, 23%) to hsl(237, 49%, 15%) */
+--border-color: hsl(217, 16%, 45%);
+--header-text: hsl(229, 64%, 46%);
+--dark-text: hsl(229, 25%, 31%);
+}
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+  background: -moz-radial-gradient(circle, hsl(214, 47%, 23%) 0%, hsl(237, 49%, 15%) 100%);;
+  background: -webkit-radial-gradient(circle, hsl(214, 47%, 23%) 0%, hsl(237, 49%, 15%) 100%);;
+  background: radial-gradient(circle, hsl(214, 47%, 23%) 0%, hsl(237, 49%, 15%) 100%);;
+  padding: 2rem 1rem;
+  height: 100%;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+.score-header {
+  border: 2px solid var(--border-color);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--md);
+  padding: 1.2rem;
+  margin: 0 auto;
+}
+
+.score {
+  background: #fefefe;
+  text-align: center;
+  border-radius: 1rem;
+  padding: 1rem 3rem;
+}
+
+.score p {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+  color: var(--header-text);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.score > #score-value {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--dark-text);
+}
+
+main#main {
+  height: fit-content;
+}
+
+.container {
+  background-image: url('../images/bg-triangle.svg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  margin: 0 auto;
+  margin-top: 6rem;
+  max-width: fit-content;
+  min-height: 400px;
+  display: grid;
+  gap: 30px 80px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  justify-items: center;
+}
+.botton-item {
+  grid-column: span 2;
+}
+
+.choice {
+  border-radius: 100%;
+  background: hsl(39, 89%, 49%);
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0px -6px rgba(0,0,0,0.2);
+}
+
+.choice div {
+  width: 140px;
+  height: 140px;
+  background: #fefefe;
+  border-radius: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0px 6px rgba(0,0,0,0.1);
+}
+
+.scissors {
+/* - Scissors Gradient: hsl(39, 89%, 49%) to hsl(40, 84%, 53%) */
+  background: -moz-radial-gradient(circle, hsl(39, 89%, 49%) 0%, hsl(40, 84%, 53%) 100%);
+  background: -webkit-radial-gradient(circle, hsl(39, 89%, 49%) 0%, hsl(40, 84%, 53%) 100%);
+  background: radial-gradient(circle, hsl(39, 89%, 49%) 0%, hsl(40, 84%, 53%) 100%);
+}
+
+.rock {
+/* - Rock Gradient: hsl(349, 71%, 52%) to hsl(349, 70%, 56%) */
+  background: -moz-radial-gradient(circle, hsl(349, 71%, 52%) 0%, hsl(349, 70%, 56%) 100%);
+  background: -webkit-radial-gradient(circle, hsl(349, 71%, 52%) 0%, hsl(349, 70%, 56%) 100%);
+  background: radial-gradient(circle, hsl(349, 71%, 52%) 0%, hsl(349, 70%, 56%) 100%);
+}
+
+.paper {
+/* - Paper Gradient: hsl(230, 89%, 62%) to hsl(230, 89%, 65%) */
+  background: -moz-radial-gradient(circle, hsl(230, 89%, 62%) 0%, hsl(230, 89%, 65%) 100%);
+  background: -webkit-radial-gradient(circle, hsl(230, 89%, 62%) 0%, hsl(230, 89%, 65%) 100%);
+  background: radial-gradient(circle, hsl(230, 89%, 62%) 0%, hsl(230, 89%, 65%) 100%);
+
+}
+
+.game {
+  margin: 0 auto;
+  max-width: fit-content;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5rem;
+}
+
+.game > div {
+   display: flex;
+   flex-direction: column;
+   gap: 2rem;
+   align-items: center;
+   min-height: 240px;
+}
+.game > div > p {
+  color: #fefefe;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 1.1px;
+}
+
+.house-pick {
+  border-radius: 100%;
+  background: var(--dark-text);
+  width: 140px;
+  height: 140px;
+  margin-top: 20px
+}
