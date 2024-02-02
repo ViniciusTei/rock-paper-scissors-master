@@ -21,7 +21,7 @@
     <img src="../images/logo.svg" alt="logo" />
     <div class="score">
       <p>score</p>
-      <span hx-get="/score" hx-trigger="every 1s" id="score-value">0</span>
+      <span id="score-value">{{ .score }}</span>
     </div>
   </header>
   <main id="main">

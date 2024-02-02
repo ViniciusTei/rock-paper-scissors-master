@@ -21,6 +21,7 @@ func main() {
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Rock Paper and Sissors Master",
+			"score": score,
 		})
 	})
 
@@ -50,22 +51,23 @@ func main() {
 		if choices[random] == "rock" {
 			if userChoice == "paper" {
 				log.Println("User win!")
+				score = score + 1
 				ctx.HTML(http.StatusOK, "win.tmpl", gin.H{
 					"choice": userChoice,
 					"house":  choices[random],
+					"score":  score,
 				})
-				score = score + 1
 				return
 			} else {
 				log.Println("User lose!")
-				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-				})
-
 				if score > 0 {
 					score = score - 1
 				}
+				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
+					"choice": userChoice,
+					"house":  choices[random],
+					"score":  score,
+				})
 				return
 			}
 		}
@@ -73,21 +75,23 @@ func main() {
 		if choices[random] == "paper" {
 			if userChoice == "scissors" {
 				log.Println("User win!")
+				score = score + 1
 				ctx.HTML(http.StatusOK, "win.tmpl", gin.H{
 					"choice": userChoice,
 					"house":  choices[random],
+					"score":  score,
 				})
-				score = score + 1
 				return
 			} else {
 				log.Println("User lose!")
-				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-				})
 				if score > 0 {
 					score = score - 1
 				}
+				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
+					"choice": userChoice,
+					"house":  choices[random],
+					"score":  score,
+				})
 				return
 			}
 		}
@@ -95,21 +99,23 @@ func main() {
 		if choices[random] == "scissors" {
 			if userChoice == "rock" {
 				log.Println("User win!")
+				score = score + 1
 				ctx.HTML(http.StatusOK, "win.tmpl", gin.H{
 					"choice": userChoice,
 					"house":  choices[random],
+					"score":  score,
 				})
-				score = score + 1
 				return
 			} else {
 				log.Println("User lose!")
-				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-				})
 				if score > 0 {
 					score = score - 1
 				}
+				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
+					"choice": userChoice,
+					"house":  choices[random],
+					"score":  score,
+				})
 				return
 			}
 		}
@@ -117,7 +123,9 @@ func main() {
 	})
 
 	r.GET("/main", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "main.tmpl", gin.H{})
+		ctx.HTML(http.StatusOK, "main.tmpl", gin.H{
+			"score": score,
+		})
 	})
 
 	r.Run() // listen and serve on 0.0.0.0:8080
