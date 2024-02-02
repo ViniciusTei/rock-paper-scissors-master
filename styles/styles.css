@@ -190,14 +190,14 @@ main#main {
   gap: 5rem;
 }
 
-.game > div {
+.game-container {
    display: flex;
    flex-direction: column;
    gap: 2rem;
    align-items: center;
    min-height: 240px;
 }
-.game > div > p {
+.game-container > p {
   color: #fefefe;
   text-transform: uppercase;
   font-weight: 600;
@@ -212,3 +212,32 @@ main#main {
   height: 140px;
   margin-top: 20px
 }
+
+.result {
+  text-align: center;
+  height: fit-content;
+}
+
+.result button {
+  padding: 0.75rem 2rem;
+  background: #fefefe;
+  border-radius: 8px;
+  border: none;
+  margin-top: 1rem;
+  color: hsl(230, 89%, 65%); 
+  letter-spacing: 1.1px;
+  font-size: 0.5rem;
+  font-weight: 600;
+}
+
+.result button:hover {
+  color: hsl(349, 70%, 56%);
+  cursor: pointer;
+}
+
+.result h1 {
+  font-weight: 700;
+  color: #fefefe;
+  font-size: 2rem;
+}
+

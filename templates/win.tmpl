@@ -7,16 +7,18 @@
         <choice-button choice="{{ .choice }}"></choice-button>
       </div>
     </div>
+    
+    <div class="result">
+      <h1>YOU WIN</h1>
+      <button hx-get="/main" hx-trigger="click" hx-target="#main" hx-swap="outerHTML">PLAY AGAIN</button>
+    </div>
+
     <div class="game-container">
       <p>The house picked</p>
 
-      <div 
-        class="house-pick" 
-        hx-get="/result?user={{ .choice }}" 
-        hx-trigger="every 3s"
-        hx-target="#main"
-        hx-swap="outterHTML"
-      />
+      <div class="choice {{ .house }}">
+        <choice-button choice="{{ .house }}"></choice-button>
+      </div>
     </div>
   </div>
 </main>
