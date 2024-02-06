@@ -25,16 +25,17 @@
     </div>
   </header>
   <main id="main">
-    <div class="container">
-      <div class="choice paper">
-        <choice-button choice="paper"></choice-button>
-      </div>
-      <div class="choice scissors">
-        <choice-button choice="scissors"></choice-button>
-      </div>
-      <div class="choice rock botton-item">
-        <choice-button choice="rock"></choice-button>
-      </div>
+    <h1 class="main-title">Choose an option to start playing</h1>
+    <div class="main-container">
+      <button 
+        hx-get="/create-game-form" 
+        hx-target="#main"
+        hx-swapt="outerHTML"
+        class="btn-default"
+      >
+        Create Game
+      </button>
+      <button class="btn-default">Join Game</button>
     </div>
   </main>
 

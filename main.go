@@ -4,12 +4,21 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 var score = 0
+
+type User struct {
+	Nick  string
+	Score int
+}
+
+type Game struct {
+	Creator  string
+	Opponent string
+}
 
 func main() {
 	r := gin.Default()
@@ -18,15 +27,31 @@ func main() {
 	r.Static("/styles", "./styles")
 	r.LoadHTMLGlob("templates/*")
 
+	var ConnectedUsers []User
+	var Games []Game
+
 	r.GET("/", func(ctx *gin.Context) {
+
 		ctx.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Rock Paper and Sissors Master",
 			"score": score,
 		})
 	})
 
-	r.GET("/score", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, strconv.FormatInt(int64(score), 10))
+	r.GET("/create-game-form", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "create-game-form.tmpl", gin.H{})
+	})
+
+	r.POST("/create-game", func(ctx *gin.Context) {
+		nickname := ctx.PostForm("nickname")
+		connected := User{Nick: nickname, Score: 0}
+		ConnectedUsers = append(ConnectedUsers, connected)
+		Games = append(Games, Game{Creator: connected.Nick})
+
+		ctx.HTML(http.StatusOK, "main.tmpl", gin.H{
+			"score": connected.Score,
+			"user":  connected.Nick,
+		})
 	})
 
 	r.GET("/choose/:choice", func(ctx *gin.Context) {
