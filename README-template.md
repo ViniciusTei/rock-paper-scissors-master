@@ -1,6 +1,6 @@
 # Frontend Mentor - Rock, Paper, Scissors solution
 
-This is a solution to the [Rock, Paper, Scissors challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/rock-paper-scissors-game-pTgwgvgH). Frontend Mentor challenges help you improve your coding skills by building realistic projects. 
+This is a solution to the [Rock, Paper, Scissors challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/rock-paper-scissors-game-pTgwgvgH). But in this challenge I tried to focus on back-end with Go lang. Making a multiplayer online game of Rock, Paer, Scissors.
 
 ## Table of contents
 
@@ -24,10 +24,9 @@ This is a solution to the [Rock, Paper, Scissors challenge on Frontend Mentor](h
 
 Users should be able to:
 
-- View the optimal layout for the game depending on their device's screen size
-- Play Rock, Paper, Scissors against the computer
-- Maintain the state of the score after refreshing the browser _(optional)_
-- **Bonus**: Play Rock, Paper, Scissors, Lizard, Spock against the computer _(optional)_
+- Create a game of Rock, Paper, Scissors or enter a game created by other user 
+- Play Rock, Paper, Scissors against the user
+- Maintain the state of the score after refreshing the browser 
 
 ### Screenshot
 
@@ -51,15 +50,9 @@ Then crop/optimize/edit your image however you like, add it to your project, and
 ### Built with
 
 - Semantic HTML5 markup
-- CSS custom properties
-- Flexbox
-- CSS Grid
-- Mobile-first workflow
-- [React](https://reactjs.org/) - JS library
-- [Next.js](https://nextjs.org/) - React framework
-- [Styled Components](https://styled-components.com/) - For styles
-
-**Note: These are just examples. Delete this note and replace the list above with your own choices**
+- [HTMX](https://htmx.org/) - for client and server comunication
+- [Go](https://go.dev/) - Main development language
+- [Gin](https://gin-gonic.com/) - For HTTP routing and serving content
 
 ### What I learned
 
