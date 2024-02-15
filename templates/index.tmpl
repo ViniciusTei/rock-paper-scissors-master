@@ -10,34 +10,34 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
   <title>{{ .title }}</title>
-  <script src="https://unpkg.com/htmx.org@1.9.10"
+  <script 
+    src="https://unpkg.com/htmx.org@1.9.10"
     integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
-    crossorigin="anonymous"></script>
+    crossorigin="anonymous"
+  >
+  </script>
+  <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
   <link rel="stylesheet" href="../styles/styles.css" />
 </head>
 
 <body>
   <header class="score-header">
     <img src="../images/logo.svg" alt="logo" />
+    <!--
+    {{ block "score" .}}
     <div class="score">
-      <p>score</p>
+      <p>{{ .user }} score</p>
       <span id="score-value">{{ .score }}</span>
     </div>
+    {{ end }}
+    -->
   </header>
-  <main id="main">
-    <h1 class="main-title">Choose an option to start playing</h1>
-    <div class="main-container">
-      <button 
-        hx-get="/create-game-form" 
-        hx-target="#main"
-        hx-swapt="outerHTML"
-        class="btn-default"
-      >
-        Create Game
-      </button>
-      <button class="btn-default">Join Game</button>
-    </div>
-  </main>
+
+  {{ if .room }}
+    {{ template "choose" .}}
+  {{ else }}
+    {{ template "main" .}}
+  {{ end}}
 
   <script src="../components/choice-button.js"></script>
 </body>

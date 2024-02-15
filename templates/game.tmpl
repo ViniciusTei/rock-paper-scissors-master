@@ -1,5 +1,5 @@
-<main id="main">
-  <div class="game">
+<main id="main" hx-swap-oob="beforeend:#main">
+  <div class="game" hx-ext="ws" ws-connect="/gameroom/{{ .room }}">
     <div class="game-container">
       <p>You picked</p>
 
@@ -7,15 +7,11 @@
         <choice-button choice="{{ .choice }}"></choice-button>
       </div>
     </div>
-    <div class="game-container">
+    <div id="pick" class="game-container">
       <p>The house picked</p>
 
       <div 
         class="house-pick" 
-        hx-get="/result?user={{ .choice }}" 
-        hx-trigger="every 1s"
-        hx-target="body"
-        hx-swap="outterHTML"
       />
     </div>
   </div>

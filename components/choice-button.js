@@ -3,14 +3,12 @@ class ChoiceButton extends HTMLElement {
     super()
     const choice = this.getAttribute("choice")
     this.innerHTML = `
-      <div 
-        hx-get="/choose/${choice}" 
-        hx-trigger="click" 
-        hx-target="#main"
-        hx-swap="outerHTML"
-      >
-        <img src="./images/icon-${choice}.svg" alt="${choice}" />
-      </div>
+      <form ws-send hx-trigger="click">
+        <div>
+          <input type="hidden" name="choice" value="${choice}" />
+          <img src="./images/icon-${choice}.svg" alt="${choice}" />
+        </div>
+      </form>
     `
   }
 }

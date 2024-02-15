@@ -1,25 +1,68 @@
-<body>
-  <header class="score-header">
-    <img src="../images/logo.svg" alt="logo" />
-    <div class="score">
-      <p>{{ .user }}score</p>
-      <span id="score-value">{{ .score }}</span>
-    </div>
-  </header>
-  <main id="main">
-    <div class="container">
-      <div class="choice paper">
-        <choice-button choice="paper"></choice-button>
-      </div>
-      <div class="choice scissors">
-        <choice-button choice="scissors"></choice-button>
-      </div>
-      <div class="choice rock botton-item">
-        <choice-button choice="rock"></choice-button>
-      </div>
-    </div>
-  </main>
+{{ block "main" .}}
+<main id="main">
+  <h1 class="main-title">Choose an option to start playing</h1>
+  <div id="main-container" class="main-container">
 
-  <script src="../components/choice-button.js"></script>
-</body>
+    <div class="rooms-container">
+      <ul>
+        {{ range .rooms }}
+          <li class="rooms-li">
+            Sala de {{ .Creator }}
+            <button
+              hx-get="/join-game-form/{{ .Id }}" 
+              hx-target="closest div"
+              hx-swapt="outerHTML"
+              class="btn-default"
+            >
+              Join
+            </button>
+          </li>
+        {{ end }}
+      </ul>
+    </div>
+
+    <button 
+      hx-get="/create-game-form" 
+      hx-target="#main-container"
+      hx-swap="outerHTML"
+      class="btn-default btn-create"
+    >
+      Create Game
+    </button>
+
+  </div>
+</main>
+{{ end }}
+
+{{ block "gameform" .}}
+<div class="main-container">
+  <form class="nick-form" hx-post={{ if .join }} "/join-game/{{ .room }}" {{ else }} "/create-game" {{end}} hx-target="#main" hx-swap="outerHTML">
+    <div class="form-group">
+      <label>Nickname</label>
+      <input type="text" name="nickname" value="joe@blow">
+    </div>
+    <button class="btn-default btn-create">Submit</button>
+  </form>
+</div>
+{{ end }}
+
+{{ block "choose" .}}
+<main 
+  id="main" 
+  hx-ext="ws" 
+  ws-connect="/gameroom?room={{ .room }}&user={{ .user }}"
+>
+  <div class="container">
+    <div class="choice paper">
+      <choice-button choice="paper"></choice-button>
+    </div>
+    <div class="choice scissors">
+      <choice-button choice="scissors"></choice-button>
+    </div>
+    <div class="choice rock botton-item">
+      <choice-button choice="rock"></choice-button>
+    </div>
+  </div>
+</main>
+{{end}}
 

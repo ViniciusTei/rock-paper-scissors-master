@@ -223,7 +223,6 @@ main#main {
   background: #fefefe;
   border-radius: 8px;
   border: none;
-  margin-top: 1rem;
   color: hsl(230, 89%, 65%); 
   letter-spacing: 1.1px;
   font-size: 0.5rem;
@@ -242,9 +241,6 @@ main#main {
 }
 
 .main-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 0.5rem;
   margin: 0 auto;
 }
@@ -255,4 +251,49 @@ main#main {
   margin: 1rem auto;
   text-align: center;
   color: #fefefe;
+}
+
+.rooms-container {
+  background: rgba(0,0,0,0.3);
+  height: 300px;
+  max-width: var(--sm);
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow-y: auto;
+  margin: 0 auto;
+}
+
+.rooms-li {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 1rem;
+  margin: 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-create {
+  width: var(--sm);
+  display: block;
+  margin: 0 auto;
+  margin-top: 8px;
+}
+
+.nick-form {
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.form-group label {
+  color: #fefefe;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border-radius: 4px;
 }
