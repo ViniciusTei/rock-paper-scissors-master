@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -54,12 +53,29 @@ func createUser(nickname string) *User {
 	return &user
 }
 
-func (u *User) Connect(conn *websocket.Conn) {
+func (u *User) Connect(conn *websocket.Conn) error {
+	if u == nil {
+		return errors.New("Tried to connect player that does not exists")
+	}
+
 	u.Conn = conn
+	return nil
 }
 
 func (u *User) SetChoice(choice string) {
 	u.Choice = choice
+}
+
+func (u *User) SendMessage(message string) error {
+	err := u.Conn.WriteMessage(websocket.TextMessage, []byte(message))
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	return nil
+}
+
+func (g *Game) connectPlayer2(player *User) {
+	g.Player2 = player
 }
 
 func createNewGame(player *User) Game {
@@ -77,12 +93,24 @@ func addNewGame(player *User) Game {
 	return game
 }
 
-func findGame(id int) Game {
+func findGame(id int) *Game {
 	if id < 0 || id > len(Games) {
 		log.Fatal("Game out of bounds")
 	}
 
-	return Games[id]
+	return &Games[id]
+}
+
+func (g Game) opponentPlayer(username string) *User {
+	if g.Player1 == nil || g.Player1.Conn == nil || g.Player2 == nil || g.Player2.Conn == nil {
+		return nil
+	}
+
+	if g.Player1.Nick == username {
+		return g.Player2
+	}
+
+	return g.Player1
 }
 
 func (g Game) connectedPlayer(username string) *User {
@@ -93,7 +121,6 @@ func (g Game) connectedPlayer(username string) *User {
 }
 
 func (g Game) isPlayerConnected(username string) bool {
-	fmt.Println("Checking player ", username)
 	if g.Player1 != nil && g.Player1.Nick == username && g.Player1.Conn != nil {
 		return true
 	}
@@ -107,12 +134,15 @@ func (g Game) isPlayerConnected(username string) bool {
 
 func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
 	if game.Player1.Conn == nil {
-		fmt.Println("Player1 connecting")
-		game.Player1.Connect(conn)
+		if err := game.Player1.Connect(conn); err != nil {
+			return errors.New(err.Error())
+		}
+
 		return nil
 	} else {
-		fmt.Println("Player2 connecting")
-		game.Player2.Connect(conn)
+		if err := game.Player2.Connect(conn); err != nil {
+			return errors.New(err.Error())
+		}
 
 		// send message to player 1 that another player has connected to his game
 		var htmlTemplate bytes.Buffer
@@ -127,12 +157,11 @@ func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
 				return errors.New("Could not connect player to gamer!")
 			}
 
-			err := game.Player1.Conn.WriteMessage(websocket.TextMessage, []byte(htmlTemplate.String()))
-			if err != nil {
-				return errors.New("Could not connect player to gamer!")
+			errSendingMessage := game.Player1.SendMessage(htmlTemplate.String())
+			if errSendingMessage != nil {
+				return errors.New(errSendingMessage.Error())
 			}
 		}
-
 		return nil
 	}
 
@@ -176,9 +205,8 @@ func main() {
 		}
 
 		var currentGame = findGame(gameId)
-		currentGame.Player2 = connected
-
-		logger.Printf("\nUser [%s] has joined to game %d", connected.Nick, currentGame.Id)
+		currentGame.connectPlayer2(connected)
+		logger.Printf("\nUser [%s] has joined to game %d", currentGame.Player2.Nick, currentGame.Id)
 
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
 		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{
@@ -223,7 +251,7 @@ func main() {
 		currentGame := findGame(gameId)
 
 		if currentGame.isPlayerConnected(currUser) == false {
-			connectionErr := connectPlayerToGame(&currentGame, conn)
+			connectionErr := connectPlayerToGame(currentGame, conn)
 			if connectionErr != nil {
 				logger.Fatal(connectionErr)
 				return
@@ -253,19 +281,26 @@ func main() {
 			// set player choice
 			if connectedUser != nil {
 				connectedUser.SetChoice(message.Choice)
+				opponent := currentGame.opponentPlayer(currUser)
 
-				var htmlTemplate bytes.Buffer
-				tmpl := template.Must(template.ParseFiles("templates/main.tmpl"))
-				if errExec := tmpl.ExecuteTemplate(&htmlTemplate, "choice", gin.H{
+				data := gin.H{
 					"choice":  connectedUser.Choice,
 					"player1": connectedUser.Nick,
 					"player2": "",
-				}); errExec != nil {
+				}
+
+				if opponent != nil {
+					data["player2"] = opponent.Nick
+				}
+
+				var htmlTemplate bytes.Buffer
+				tmpl := template.Must(template.ParseFiles("templates/main.tmpl"))
+				if errExec := tmpl.ExecuteTemplate(&htmlTemplate, "choice", data); errExec != nil {
 					logger.Println("Error executing template", errExec)
 					return
 				}
 
-				if errWS := connectedUser.Conn.WriteMessage(websocket.TextMessage, []byte(htmlTemplate.String())); errWS != nil {
+				if errWS := connectedUser.SendMessage(htmlTemplate.String()); errWS != nil {
 					logger.Println("Error sending websocket response")
 					return
 				}
