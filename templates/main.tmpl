@@ -7,7 +7,7 @@
       <ul>
         {{ range .rooms }}
           <li class="rooms-li">
-            Sala de {{ .Creator }}
+            Sala de {{ .Player1.Nick }}
             <button
               hx-get="/join-game-form/{{ .Id }}" 
               hx-target="closest div"
