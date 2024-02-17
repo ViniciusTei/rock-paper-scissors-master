@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
 
@@ -18,17 +19,16 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var score = 0
-
 type User struct {
-	Nick  string
-	Score int
+	Nick   string
+	Choice string
+	Conn   *websocket.Conn
 }
 
 type Game struct {
-	Id       int
-	Creator  string
-	Opponent string
+	Id      int
+	Player1 *User
+	Player2 *User
 }
 
 type WSMessage struct {
@@ -42,20 +42,113 @@ type WSMessage struct {
 	} `json:"HEADERS"`
 }
 
+var Games = []Game{}
+
+func createUser(nickname string) *User {
+	user := User{
+		Nick:   nickname,
+		Choice: "",
+		Conn:   nil,
+	}
+
+	return &user
+}
+
+func (u *User) Connect(conn *websocket.Conn) {
+	u.Conn = conn
+}
+
+func (u *User) SetChoice(choice string) {
+	u.Choice = choice
+}
+
+func createNewGame(player *User) Game {
+	game := Game{
+		Id:      len(Games),
+		Player1: player,
+	}
+
+	return game
+}
+
+func addNewGame(player *User) Game {
+	game := createNewGame(player)
+	Games = append(Games, game)
+	return game
+}
+
+func findGame(id int) Game {
+	if id < 0 || id > len(Games) {
+		log.Fatal("Game out of bounds")
+	}
+
+	return Games[id]
+}
+
+func (g Game) connectedPlayer(username string) *User {
+	if g.Player1.Nick == username {
+		return g.Player1
+	}
+	return g.Player2
+}
+
+func (g Game) isPlayerConnected(username string) bool {
+	fmt.Println("Checking player ", username)
+	if g.Player1 != nil && g.Player1.Nick == username && g.Player1.Conn != nil {
+		return true
+	}
+
+	if g.Player2 != nil && g.Player2.Nick == username && g.Player2.Conn != nil {
+		return true
+	}
+
+	return false
+}
+
+func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
+	if game.Player1.Conn == nil {
+		fmt.Println("Player1 connecting")
+		game.Player1.Connect(conn)
+		return nil
+	} else {
+		fmt.Println("Player2 connecting")
+		game.Player2.Connect(conn)
+
+		// send message to player 1 that another player has connected to his game
+		var htmlTemplate bytes.Buffer
+
+		if game.Player1.Choice != "" {
+			tmpl := template.Must(template.ParseFiles("templates/main.tmpl"))
+			if errExec := tmpl.ExecuteTemplate(&htmlTemplate, "choice", gin.H{
+				"choice1": game.Player1.Choice,
+				"player1": game.Player1.Nick,
+				"player2": game.Player2.Nick,
+			}); errExec != nil {
+				return errors.New("Could not connect player to gamer!")
+			}
+
+			err := game.Player1.Conn.WriteMessage(websocket.TextMessage, []byte(htmlTemplate.String()))
+			if err != nil {
+				return errors.New("Could not connect player to gamer!")
+			}
+		}
+
+		return nil
+	}
+
+}
+
 func main() {
+	logger := log.Default()
 	r := gin.Default()
 	r.Static("/images", "./images")
 	r.Static("/components", "./components")
 	r.Static("/styles", "./styles")
 	r.LoadHTMLGlob("templates/*")
 
-	var ConnectedUsers = []User{{Nick: "dummy", Score: 0}}
-	var Games = []Game{{Id: 0, Creator: "dummy"}}
-
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Rock Paper and Sissors Master",
-			"score": score,
 			"rooms": Games,
 		})
 	})
@@ -72,68 +165,40 @@ func main() {
 	})
 
 	r.POST("/join-game/:room", func(ctx *gin.Context) {
-		nickname := ctx.PostForm("nickname")
-
-		var connected User
-		if len(ConnectedUsers) == 0 {
-			connected = User{Nick: nickname, Score: 0}
-			ConnectedUsers = append(ConnectedUsers, connected)
-		} else {
-			for _, con := range ConnectedUsers {
-				if con.Nick == nickname {
-					connected = con
-					break
-				}
-			}
-
-			if (connected == User{}) {
-				connected = User{Nick: nickname, Score: 0}
-				ConnectedUsers = append(ConnectedUsers, connected)
-			}
-		}
+		username := ctx.PostForm("nickname")
+		var connected = createUser(username)
 
 		currGame := ctx.Param("room")
-
 		gameId, atoiErr := strconv.Atoi(currGame)
 		if atoiErr != nil {
 			log.Println("Cannot find game room!")
 			return
 		}
 
+		var currentGame = findGame(gameId)
+		currentGame.Player2 = connected
+
+		logger.Printf("\nUser [%s] has joined to game %d", connected.Nick, currentGame.Id)
+
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
 		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{
-			"room": gameId,
-			"user": nickname,
+			"room":    currentGame.Id,
+			"plyaer1": currentGame.Player2.Nick,
 		})
 	})
 
 	r.POST("/create-game", func(ctx *gin.Context) {
-		nickname := ctx.PostForm("nickname")
-		var connected User
-		if len(ConnectedUsers) == 0 {
-			connected = User{Nick: nickname, Score: 0}
-			ConnectedUsers = append(ConnectedUsers, connected)
-		} else {
-			for _, con := range ConnectedUsers {
-				if con.Nick == nickname {
-					connected = con
-					break
-				}
-			}
+		username := ctx.PostForm("nickname")
 
-			if (connected == User{}) {
-				connected = User{Nick: nickname, Score: 0}
-				ConnectedUsers = append(ConnectedUsers, connected)
-			}
-		}
-
-		currGame := Game{Id: len(Games), Creator: connected.Nick}
-		Games = append(Games, currGame)
+		var connected = createUser(username)
+		currGame := addNewGame(connected)
+		logger.Printf("\nUser [%s] has created a new game %d", connected.Nick, currGame.Id)
 
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
 		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{
-			"room": currGame.Id,
-			"user": nickname,
+			"room":    currGame.Id,
+			"player1": currGame.Player1.Nick,
+			"player2": "",
 		})
 
 	})
@@ -146,134 +211,66 @@ func main() {
 		}
 
 		defer conn.Close() //TODO research about defer
+
 		currGame := ctx.Query("room")
 		currUser := ctx.Query("user")
-
 		gameId, atoiErr := strconv.Atoi(currGame)
+
 		if atoiErr != nil {
 			return
 		}
-		// new client joined to room gameId
-		fmt.Printf("User %s joined room id %d", currUser, gameId)
+
+		currentGame := findGame(gameId)
+
+		if currentGame.isPlayerConnected(currUser) == false {
+			connectionErr := connectPlayerToGame(&currentGame, conn)
+			if connectionErr != nil {
+				logger.Fatal(connectionErr)
+				return
+			}
+
+		}
+
+		connectedUser := currentGame.connectedPlayer(currUser)
+		logger.Printf(
+			"\nUser [%s] has connected to game %d",
+			connectedUser.Nick,
+			currentGame.Id,
+		)
 		for {
-			msgType, p, err := conn.ReadMessage()
+			_, p, err := conn.ReadMessage()
 			if err != nil {
 				return
 			}
-			fmt.Printf("\nReceived message: {%s}", string(p))
-
 			// get choice from the message
-			choice := WSMessage{}
-			choiceErr := json.Unmarshal(p, &choice)
-
-			if choiceErr != nil {
-				fmt.Print("choice to struct error", err)
+			message := WSMessage{}
+			messageErr := json.Unmarshal(p, &message)
+			if messageErr != nil {
+				logger.Print("choice to struct error", err)
 				return
 			}
 
-			fmt.Printf("\nUser choice %s", choice.Choice)
+			// set player choice
+			if connectedUser != nil {
+				connectedUser.SetChoice(message.Choice)
 
-			if err := conn.WriteMessage(msgType, p); err != nil {
-				return
-			}
-		}
-	})
-
-	r.GET("/choose/:choice", func(ctx *gin.Context) {
-		choice := ctx.Param("choice")
-
-		log.Println("USER picked: ", choice)
-		ctx.HTML(http.StatusOK, "game.tmpl", gin.H{
-			"choice": choice,
-		})
-	})
-
-	r.GET("/result", func(ctx *gin.Context) {
-		userChoice := ctx.Query("user")
-		choices := [3]string{"rock", "paper", "scissors"}
-		random := rand.Intn(len(choices))
-
-		if choices[random] == userChoice {
-			random = rand.Intn(len(choices))
-		}
-
-		if choices[random] == "rock" {
-			if userChoice == "paper" {
-				log.Println("User win!")
-				score = score + 1
-				ctx.HTML(http.StatusOK, "win.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-					"score":  score,
-				})
-				return
-			} else {
-				log.Println("User lose!")
-				if score > 0 {
-					score = score - 1
+				var htmlTemplate bytes.Buffer
+				tmpl := template.Must(template.ParseFiles("templates/main.tmpl"))
+				if errExec := tmpl.ExecuteTemplate(&htmlTemplate, "choice", gin.H{
+					"choice":  connectedUser.Choice,
+					"player1": connectedUser.Nick,
+					"player2": "",
+				}); errExec != nil {
+					logger.Println("Error executing template", errExec)
+					return
 				}
-				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-					"score":  score,
-				})
-				return
-			}
-		}
 
-		if choices[random] == "paper" {
-			if userChoice == "scissors" {
-				log.Println("User win!")
-				score = score + 1
-				ctx.HTML(http.StatusOK, "win.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-					"score":  score,
-				})
-				return
-			} else {
-				log.Println("User lose!")
-				if score > 0 {
-					score = score - 1
+				if errWS := connectedUser.Conn.WriteMessage(websocket.TextMessage, []byte(htmlTemplate.String())); errWS != nil {
+					logger.Println("Error sending websocket response")
+					return
 				}
-				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-					"score":  score,
-				})
-				return
 			}
 		}
-
-		if choices[random] == "scissors" {
-			if userChoice == "rock" {
-				log.Println("User win!")
-				score = score + 1
-				ctx.HTML(http.StatusOK, "win.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-					"score":  score,
-				})
-				return
-			} else {
-				log.Println("User lose!")
-				if score > 0 {
-					score = score - 1
-				}
-				ctx.HTML(http.StatusOK, "lose.tmpl", gin.H{
-					"choice": userChoice,
-					"house":  choices[random],
-					"score":  score,
-				})
-				return
-			}
-		}
-
-	})
-
-	r.GET("/main/:room", func(ctx *gin.Context) {
-		html := template.Must(template.ParseFiles("templates/index.tmpl"))
-		html.ExecuteTemplate(ctx.Writer, "main", Game{})
 	})
 
 	r.Run() // listen and serve on 0.0.0.0:8080

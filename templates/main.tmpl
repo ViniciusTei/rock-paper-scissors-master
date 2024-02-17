@@ -50,9 +50,9 @@
 <main 
   id="main" 
   hx-ext="ws" 
-  ws-connect="/gameroom?room={{ .room }}&user={{ .user }}"
+  ws-connect="/gameroom?room={{ .room }}&user={{ .player1 }}"
 >
-  <div class="container">
+  <div id="container" class="container">
     <div class="choice paper">
       <choice-button choice="paper"></choice-button>
     </div>
@@ -66,3 +66,26 @@
 </main>
 {{end}}
 
+{{ block "choice" .}}
+<div id="container">
+  <div id="await-opponent" class="game-container">
+    <p>You picked</p>
+
+    <div class="choice {{ .choice }}">
+      <choice-button choice="{{ .choice }}"></choice-button>
+    </div>
+  </div>
+
+  <div id="pick" class="game-container">
+    {{if .player2 }}
+      <p>Opponent is {{.player2}}</p>
+    {{else}}
+      <p>Awaiting opponent</p>
+    {{end}}
+    
+    <div 
+      class="house-pick" 
+    />
+  </div>
+</div>
+{{ end }}
