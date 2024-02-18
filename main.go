@@ -81,6 +81,11 @@ func main() {
 
 		var currentGame = findGame(gameId)
 
+		if currentGame.Player1.Nick == username {
+			ctx.String(http.StatusBadRequest, "Username already in use.")
+			return
+		}
+
 		err := currentGame.connectPlayer2(connected)
 		if err != nil {
 			return
