@@ -9,14 +9,14 @@
   
   <div class="result">
     <h1>Draw</h1>
-    <button 
+    <button  
       class="btn-default" 
-      hx-get="/" 
+      hx-get="/play-again?room={{ .room }}&user={{ .user }}" 
       hx-trigger="click" 
-      hx-target="html" 
-      hx-swap="outerHTML"
+      hx-target="#container" 
+      hx-swap="innerHTML"
     >
-      PLAY AGAIN
+     PLAY AGAIN
     </button>
     <button 
       class="btn-default" 

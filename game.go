@@ -71,6 +71,11 @@ func (u *User) SetChoice(choice string) error {
 		return nil
 	}
 
+	if choice == "none" {
+		u.Choice = 0
+		return nil
+	}
+
 	return errors.New("Choice not defined")
 }
 

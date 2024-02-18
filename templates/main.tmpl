@@ -97,6 +97,34 @@
 </div>
 {{ end }}
 
+{{ block "play-again" .}}
+<div id="container">
+  <div class="game-container">
+    <div class="result">
+      <h1>Opponent wants to play again. Do you accept?</h1>
+      <button  
+        class="btn-default" 
+        hx-get="play-again/yes?room={{ .room }}&user={{ .user }}" 
+        hx-trigger="click" 
+        hx-target="#container" 
+        hx-swap="outerHTML"
+      >
+       YES
+      </button>
+      <button  
+        class="btn-default" 
+        hx-get="play-again/no?room={{ .room }}&user={{ .user }}" 
+        hx-trigger="click" 
+        hx-target="#container" 
+        hx-swap="outerHTML"
+      >
+       NO
+      </button>
+    <div>
+  </div>
+</div>
+{{ end }}
+
 {{ block "waiting" .}}
 <main 
   id="main" 

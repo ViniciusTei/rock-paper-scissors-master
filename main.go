@@ -96,6 +96,85 @@ func main() {
 	})
 
 	r.GET("/play-again", func(ctx *gin.Context) {
+		currGame := ctx.Query("room")
+		currUser := ctx.Query("user")
+
+		gameId, atoiErr := strconv.Atoi(currGame)
+		if atoiErr != nil {
+			ctx.String(http.StatusNotFound, "Error trying to find current game")
+			return
+		}
+
+		currentGame := findGame(gameId)
+		currentUser := currentGame.connectedPlayer(currUser)
+		err := currentUser.SetChoice("none")
+		if err != nil {
+			ctx.String(http.StatusNotFound, "Error tring to change player choice")
+			return
+		}
+
+		opponent := currentGame.opponentPlayer(currUser)
+		errOp := opponent.SetChoice("none")
+		if errOp != nil {
+			ctx.String(http.StatusNotFound, "Error tring to change player choice")
+			return
+		}
+
+		if errMsg := opponent.SendMessage("templates/main.tmpl", "play-again", map[string]string{
+			"room": currGame,
+			"user": opponent.Nick,
+		}); errMsg != nil {
+			ctx.String(http.StatusNotFound, "Error trying to send player action")
+			return
+		}
+
+		html := template.Must(template.ParseFiles("templates/main.tmpl"))
+		html.ExecuteTemplate(ctx.Writer, "wait", gin.H{})
+		return
+	})
+
+	r.GET("/play-again/:opt", func(ctx *gin.Context) {
+		opt := ctx.Param("opt")
+		currGame := ctx.Query("room")
+		currUser := ctx.Query("user")
+
+		gameId, atoiErr := strconv.Atoi(currGame)
+		if atoiErr != nil {
+			ctx.String(http.StatusNotFound, "Error trying to find current game")
+			return
+		}
+
+		currentGame := findGame(gameId)
+		if opt == "no" {
+			err := currentGame.disconnectPlayer(currUser)
+			if err != nil {
+				ctx.String(http.StatusInternalServerError, "Error trying to disconnect from game")
+				return
+			}
+
+			html := template.Must(template.ParseFiles("templates/main.tmpl"))
+			html.ExecuteTemplate(ctx.Writer, "main", gin.H{
+				"rooms": Games,
+			})
+		}
+
+		if opt == "yes" {
+			opponent := currentGame.opponentPlayer(currUser)
+			if errMsg := opponent.SendMessage("templates/main.tmpl", "game", map[string]string{
+				"opponent": currUser,
+			}); errMsg != nil {
+				ctx.String(http.StatusInternalServerError, "Error trying to notify opponent")
+				return
+			}
+
+			html := template.Must(template.ParseFiles("templates/main.tmpl"))
+			html.ExecuteTemplate(ctx.Writer, "game", gin.H{
+				"opponent": opponent.Nick,
+			})
+			return
+		}
+
+		ctx.String(http.StatusBadRequest, "Must chose between Yes or No")
 	})
 
 	r.GET("/quit-game", func(ctx *gin.Context) {
@@ -105,12 +184,14 @@ func main() {
 
 		if atoiErr != nil {
 			ctx.String(http.StatusNotFound, "Error trying to find current game")
+			return
 		}
 
 		currentGame := findGame(gameId)
 		err := currentGame.disconnectPlayer(currUser)
 		if err != nil {
 			ctx.String(http.StatusInternalServerError, "Error trying to disconnect from game")
+			return
 		}
 
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
