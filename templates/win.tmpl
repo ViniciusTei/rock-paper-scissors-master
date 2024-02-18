@@ -1,42 +1,30 @@
-<body>
-  <header class="score-header">
-    <img src="../images/logo.svg" alt="logo" />
-    <div class="score">
-      <p>score</p>
-      <span id="score-value">{{ .score }}</span>
+<div id="container" class="game">
+  <div class="game-container">
+    <p>You picked</p>
+
+    <div class="choice {{ .choice }}">
+      <choice-button choice="{{ .choice }}"></choice-button>
     </div>
-  </header>
-  <main id="main">
-    <div class="game">
-      <div class="game-container">
-        <p>You picked</p>
+  </div>
+  
+  <div class="result">
+    <h1>YOU WIN</h1>
+    <button  
+      class="btn-default" 
+      hx-get="/" 
+      hx-trigger="click" 
+      hx-target="html" 
+      hx-swap="outerHTML"
+    >
+     PLAY AGAIN
+    </button>
+  </div>
 
-        <div class="choice {{ .choice }}">
-          <choice-button choice="{{ .choice }}"></choice-button>
-        </div>
-      </div>
-      
-      <div class="result">
-        <h1>YOU WIN</h1>
-        <button  
-          class="btn-default" 
-          hx-get="/main" 
-          hx-trigger="click" 
-          hx-target="body" 
-          hx-swap="outerHTML"
-        >
-         PLAY AGAIN
-        </button>
-      </div>
+  <div class="game-container">
+    <p>{{ .opponent }} picked</p>
 
-      <div class="game-container">
-        <p>The house picked</p>
-
-        <div class="choice {{ .house }}">
-          <choice-button choice="{{ .house }}"></choice-button>
-        </div>
-      </div>
+    <div class="choice {{ .house }}">
+      <choice-button choice="{{ .house }}"></choice-button>
     </div>
-  </main>
-  <script src="../components/choice-button.js"></script>
-</body>
+  </div>
+</div>

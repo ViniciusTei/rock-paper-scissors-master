@@ -18,9 +18,17 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+type Choice int
+
+const (
+	ROCK Choice = iota + 1
+	PAPER
+	SCISSORS
+)
+
 type User struct {
 	Nick   string
-	Choice string
+	Choice Choice
 	Conn   *websocket.Conn
 }
 
@@ -43,10 +51,14 @@ type WSMessage struct {
 
 var Games = []Game{}
 
+func (d Choice) String() string {
+	return [...]string{"rock", "paper", "scissors"}[d-1]
+}
+
 func createUser(nickname string) *User {
 	user := User{
 		Nick:   nickname,
-		Choice: "",
+		Choice: 0,
 		Conn:   nil,
 	}
 
@@ -62,16 +74,100 @@ func (u *User) Connect(conn *websocket.Conn) error {
 	return nil
 }
 
-func (u *User) SetChoice(choice string) {
-	u.Choice = choice
+func (u *User) SetChoice(choice string) error {
+	if choice == "rock" {
+		u.Choice = ROCK
+		return nil
+	}
+
+	if choice == "paper" {
+		u.Choice = PAPER
+		return nil
+	}
+
+	if choice == "scissors" {
+		u.Choice = SCISSORS
+		return nil
+	}
+
+	return errors.New("Choice not defined")
 }
 
-func (u *User) SendMessage(message string) error {
-	err := u.Conn.WriteMessage(websocket.TextMessage, []byte(message))
+func (u User) HasChoice() bool {
+	if u.Choice != 0 {
+		return true
+	}
+
+	return false
+}
+
+func (u *User) SendTemplate(file string, data map[string]string) error {
+	var htmlTemplate bytes.Buffer
+	tmpl := template.Must(template.ParseFiles(file))
+	if errExec := tmpl.Execute(&htmlTemplate, data); errExec != nil {
+		log.Println("Error executing template", errExec)
+		return errExec
+	}
+
+	err := u.Conn.WriteMessage(websocket.TextMessage, []byte(htmlTemplate.String()))
 	if err != nil {
 		return errors.New(err.Error())
 	}
 	return nil
+}
+
+func (u *User) SendMessage(file string, block string, data map[string]string) error {
+	var htmlTemplate bytes.Buffer
+	tmpl := template.Must(template.ParseFiles(file))
+	if errExec := tmpl.ExecuteTemplate(&htmlTemplate, block, data); errExec != nil {
+		log.Println("Error executing template", errExec)
+		return errExec
+	}
+
+	err := u.Conn.WriteMessage(websocket.TextMessage, []byte(htmlTemplate.String()))
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	return nil
+}
+
+func (u User) SendResult(result string, opponent *User) {
+	if result == "draw" {
+		if errPlayer := u.SendTemplate("templates/draw.tmpl", map[string]string{
+			"choice":   u.Choice.String(),
+			"opponent": opponent.Nick,
+			"house":    opponent.Choice.String(),
+		}); errPlayer != nil {
+			return
+		}
+
+		return
+	}
+
+	if result == "win" {
+		if errPlayer := u.SendTemplate("templates/win.tmpl", map[string]string{
+			"choice":   u.Choice.String(),
+			"opponent": opponent.Nick,
+			"house":    opponent.Choice.String(),
+		}); errPlayer != nil {
+			return
+		}
+
+		return
+	}
+
+	if result == "lose" {
+		if errPlayer := u.SendTemplate("templates/lose.tmpl", map[string]string{
+			"choice":   u.Choice.String(),
+			"opponent": opponent.Nick,
+			"house":    opponent.Choice.String(),
+		}); errPlayer != nil {
+			return
+		}
+
+		return
+	}
+
 }
 
 func (g *Game) connectPlayer2(player *User) {
@@ -132,6 +228,94 @@ func (g Game) isPlayerConnected(username string) bool {
 	return false
 }
 
+func (g Game) handlePlayerMessage(player *User) {
+	opponent := g.opponentPlayer(player.Nick)
+
+	if player.HasChoice() && opponent != nil && opponent.HasChoice() {
+		//end game
+		if player.Choice == ROCK {
+			if opponent.Choice == ROCK {
+				player.SendResult("draw", opponent)
+				opponent.SendResult("draw", player)
+
+				return
+			}
+			if opponent.Choice == PAPER {
+				player.SendResult("lose", opponent)
+				opponent.SendResult("win", player)
+
+				return
+			}
+			if opponent.Choice == SCISSORS {
+				player.SendResult("win", opponent)
+				opponent.SendResult("lose", player)
+
+				return
+			}
+		}
+
+		if player.Choice == PAPER {
+			if opponent.Choice == ROCK {
+				player.SendResult("win", opponent)
+				opponent.SendResult("lose", player)
+
+				return
+			}
+			if opponent.Choice == PAPER {
+				player.SendResult("draw", opponent)
+				opponent.SendResult("draw", player)
+
+				return
+			}
+			if opponent.Choice == SCISSORS {
+				player.SendResult("lose", opponent)
+				opponent.SendResult("win", player)
+
+				return
+			}
+		}
+
+		if player.Choice == SCISSORS {
+			if opponent.Choice == ROCK {
+				player.SendResult("lose", opponent)
+				opponent.SendResult("win", player)
+
+				return
+			}
+			if opponent.Choice == PAPER {
+				player.SendResult("win", opponent)
+				opponent.SendResult("lose", player)
+
+				return
+			}
+			if opponent.Choice == SCISSORS {
+				player.SendResult("draw", opponent)
+				opponent.SendResult("draw", player)
+
+				return
+			}
+		}
+	} else {
+		data := map[string]string{
+			"choice":  player.Choice.String(),
+			"player1": player.Nick,
+			"player2": "",
+		}
+
+		if opponent != nil {
+			data["player2"] = opponent.Nick
+		}
+
+		errWS := player.SendMessage("templates/main.tmpl", "choice", data)
+		if errWS != nil {
+			log.Println("Error sending websocket response")
+			return
+		}
+
+		return
+	}
+}
+
 func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
 	if game.Player1.Conn == nil {
 		if err := game.Player1.Connect(conn); err != nil {
@@ -144,24 +328,21 @@ func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
 			return errors.New(err.Error())
 		}
 
-		// send message to player 1 that another player has connected to his game
-		var htmlTemplate bytes.Buffer
-
-		if game.Player1.Choice != "" {
-			tmpl := template.Must(template.ParseFiles("templates/main.tmpl"))
-			if errExec := tmpl.ExecuteTemplate(&htmlTemplate, "choice", gin.H{
-				"choice1": game.Player1.Choice,
-				"player1": game.Player1.Nick,
-				"player2": game.Player2.Nick,
-			}); errExec != nil {
-				return errors.New("Could not connect player to gamer!")
-			}
-
-			errSendingMessage := game.Player1.SendMessage(htmlTemplate.String())
-			if errSendingMessage != nil {
-				return errors.New(errSendingMessage.Error())
-			}
+		// send message to players that another player has connected to the game
+		errSendingMessage := game.Player1.SendMessage("templates/main.tmpl", "game", map[string]string{
+			"opponent": game.Player2.Nick,
+		})
+		if errSendingMessage != nil {
+			return errors.New(errSendingMessage.Error())
 		}
+
+		errSendingMessage2 := game.Player2.SendMessage("templates/main.tmpl", "game", map[string]string{
+			"opponent": game.Player1.Nick,
+		})
+		if errSendingMessage2 != nil {
+			return errors.New(errSendingMessage2.Error())
+		}
+
 		return nil
 	}
 
@@ -209,10 +390,15 @@ func main() {
 		logger.Printf("\nUser [%s] has joined to game %d", currentGame.Player2.Nick, currentGame.Id)
 
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
-		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{
-			"room":    currentGame.Id,
-			"plyaer1": currentGame.Player2.Nick,
+		html.ExecuteTemplate(ctx.Writer, "waiting", gin.H{
+			"room": currentGame.Id,
+			"user": currentGame.Player2.Nick,
 		})
+	})
+
+	r.GET("/start-game", func(ctx *gin.Context) {
+		html := template.Must(template.ParseFiles("templates/main.tmpl"))
+		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{})
 	})
 
 	r.POST("/create-game", func(ctx *gin.Context) {
@@ -223,12 +409,10 @@ func main() {
 		logger.Printf("\nUser [%s] has created a new game %d", connected.Nick, currGame.Id)
 
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
-		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{
-			"room":    currGame.Id,
-			"player1": currGame.Player1.Nick,
-			"player2": "",
+		html.ExecuteTemplate(ctx.Writer, "waiting", gin.H{
+			"room": currGame.Id,
+			"user": currGame.Player1.Nick,
 		})
-
 	})
 
 	r.GET("/gameroom", func(ctx *gin.Context) {
@@ -270,6 +454,7 @@ func main() {
 			if err != nil {
 				return
 			}
+
 			// get choice from the message
 			message := WSMessage{}
 			messageErr := json.Unmarshal(p, &message)
@@ -278,32 +463,15 @@ func main() {
 				return
 			}
 
+			if message.Choice == "" {
+				logger.Print("Did not choose yet")
+				return
+			}
+
 			// set player choice
 			if connectedUser != nil {
 				connectedUser.SetChoice(message.Choice)
-				opponent := currentGame.opponentPlayer(currUser)
-
-				data := gin.H{
-					"choice":  connectedUser.Choice,
-					"player1": connectedUser.Nick,
-					"player2": "",
-				}
-
-				if opponent != nil {
-					data["player2"] = opponent.Nick
-				}
-
-				var htmlTemplate bytes.Buffer
-				tmpl := template.Must(template.ParseFiles("templates/main.tmpl"))
-				if errExec := tmpl.ExecuteTemplate(&htmlTemplate, "choice", data); errExec != nil {
-					logger.Println("Error executing template", errExec)
-					return
-				}
-
-				if errWS := connectedUser.SendMessage(htmlTemplate.String()); errWS != nil {
-					logger.Println("Error sending websocket response")
-					return
-				}
+				currentGame.handlePlayerMessage(connectedUser)
 			}
 		}
 	})

@@ -47,12 +47,8 @@
 {{ end }}
 
 {{ block "choose" .}}
-<main 
-  id="main" 
-  hx-ext="ws" 
-  ws-connect="/gameroom?room={{ .room }}&user={{ .player1 }}"
->
-  <div id="container" class="container">
+<div id="container" hx-swap-oop="innerHTML">
+  <div  class="container">
     <div class="choice paper">
       <choice-button choice="paper"></choice-button>
     </div>
@@ -63,11 +59,11 @@
       <choice-button choice="rock"></choice-button>
     </div>
   </div>
-</main>
+</div>
 {{end}}
 
 {{ block "choice" .}}
-<div id="container">
+<div id="container" hx-swap-oop="innerHTML">
   <div id="await-opponent" class="game-container">
     <p>You picked</p>
 
@@ -89,3 +85,57 @@
   </div>
 </div>
 {{ end }}
+
+{{ block "waiting" .}}
+<main 
+  id="main" 
+  hx-ext="ws" 
+  ws-connect="/gameroom?room={{ .room }}&user={{ .user }}"
+>
+  <div id="container" hx-swap-oop="innerHTML">
+    <div id="pick" class="game-container">
+        <p>Awaiting opponent</p>
+      
+      <div 
+        class="house-pick" 
+      />
+    </div>
+  </div>
+</main>
+{{ end }}
+
+{{ block "game" .}}
+<div 
+  id="container" 
+  hx-get="/start-game" 
+  hx-trigger="load delay:4s" 
+  hx-target="#container" 
+  hx-swap="outerHTML"
+>
+  <div id="await-opponent" class="game-container">
+    <p id="counter">The game is starting... In 3</p>
+
+    <div 
+      class="house-pick" 
+    />
+  </div>
+
+  <div id="pick" class="game-container">
+    <p>Opponent is {{.opponent }}</p>
+    
+    <div 
+      class="house-pick" 
+    />
+  </div>
+  <script>
+    const counter = document.getElementById("counter")
+    let time = 2
+    setInterval(() => {
+      if (time >= 0) { 
+        counter.innerHTML = `The game is starting... In ${time}` 
+        time--
+      }
+    }, 1000);
+  </script>
+</div>
+{{ end}}
