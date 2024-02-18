@@ -67,7 +67,7 @@
     <p>You picked</p>
 
     <div class="choice {{ .choice }}">
-      <choice-button choice="{{ .choice }}"></choice-button>
+      <choice-button choice="{{ .choice }}" disabled></choice-button>
     </div>
   </div>
 
@@ -85,21 +85,25 @@
 </div>
 {{ end }}
 
+{{ define "wait" }}
+<div id="container" hx-swap-oop="innerHTML">
+  <div id="pick" class="game-container">
+      <p>Awaiting opponent</p>
+    
+    <div 
+      class="house-pick" 
+    />
+  </div>
+</div>
+{{ end }}
+
 {{ block "waiting" .}}
 <main 
   id="main" 
   hx-ext="ws" 
   ws-connect="/gameroom?room={{ .room }}&user={{ .user }}"
 >
-  <div id="container" hx-swap-oop="innerHTML">
-    <div id="pick" class="game-container">
-        <p>Awaiting opponent</p>
-      
-      <div 
-        class="house-pick" 
-      />
-    </div>
-  </div>
+  {{ template "wait" }}
 </main>
 {{ end }}
 

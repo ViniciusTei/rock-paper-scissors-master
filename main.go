@@ -95,6 +95,30 @@ func main() {
 		})
 	})
 
+	r.GET("/play-again", func(ctx *gin.Context) {
+	})
+
+	r.GET("/quit-game", func(ctx *gin.Context) {
+		currGame := ctx.Query("room")
+		currUser := ctx.Query("user")
+		gameId, atoiErr := strconv.Atoi(currGame)
+
+		if atoiErr != nil {
+			ctx.String(http.StatusNotFound, "Error trying to find current game")
+		}
+
+		currentGame := findGame(gameId)
+		err := currentGame.disconnectPlayer(currUser)
+		if err != nil {
+			ctx.String(http.StatusInternalServerError, "Error trying to disconnect from game")
+		}
+
+		html := template.Must(template.ParseFiles("templates/main.tmpl"))
+		html.ExecuteTemplate(ctx.Writer, "main", gin.H{
+			"rooms": Games,
+		})
+	})
+
 	r.GET("/start-game", func(ctx *gin.Context) {
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
 		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{})
@@ -134,7 +158,7 @@ func main() {
 		currentGame := findGame(gameId)
 
 		if currentGame.isPlayerConnected(currUser) == false {
-			connectionErr := connectPlayerToGame(currentGame, conn)
+			connectionErr := currentGame.connectPlayerToGame(conn)
 			if connectionErr != nil {
 				logger.Fatal(connectionErr)
 				return

@@ -18,6 +18,15 @@
     >
      PLAY AGAIN
     </button>
+
+    <button 
+      class="btn-default" 
+      hx-get="/quit-game?room={{ .room }}&user={{ .user }}" 
+      hx-trigger="click" 
+      hx-target="#main"
+    >
+      QUIT GAME
+    </button>
   </div>
 
   <div class="game-container">

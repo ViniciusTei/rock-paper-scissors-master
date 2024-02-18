@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"errors"
-	"github.com/gorilla/websocket"
+	"fmt"
 	"html/template"
 	"log"
+
+	"github.com/gorilla/websocket"
 )
 
 type Choice int
@@ -110,12 +112,16 @@ func (u *User) SendMessage(file string, block string, data map[string]string) er
 	return nil
 }
 
-func (u User) SendResult(result string, opponent *User) {
+func (u *User) SendResult(result string, opponent *User, game int) {
+	gameId := fmt.Sprint(game)
+
 	if result == "draw" {
 		if errPlayer := u.SendTemplate("templates/draw.tmpl", map[string]string{
 			"choice":   u.Choice.String(),
 			"opponent": opponent.Nick,
 			"house":    opponent.Choice.String(),
+			"room":     gameId,
+			"user":     u.Nick,
 		}); errPlayer != nil {
 			return
 		}
@@ -128,6 +134,8 @@ func (u User) SendResult(result string, opponent *User) {
 			"choice":   u.Choice.String(),
 			"opponent": opponent.Nick,
 			"house":    opponent.Choice.String(),
+			"room":     gameId,
+			"user":     u.Nick,
 		}); errPlayer != nil {
 			return
 		}
@@ -140,6 +148,8 @@ func (u User) SendResult(result string, opponent *User) {
 			"choice":   u.Choice.String(),
 			"opponent": opponent.Nick,
 			"house":    opponent.Choice.String(),
+			"room":     gameId,
+			"user":     u.Nick,
 		}); errPlayer != nil {
 			return
 		}
@@ -226,20 +236,20 @@ func (g Game) handlePlayerMessage(player *User) {
 		//end game
 		if player.Choice == ROCK {
 			if opponent.Choice == ROCK {
-				player.SendResult("draw", opponent)
-				opponent.SendResult("draw", player)
+				player.SendResult("draw", opponent, g.Id)
+				opponent.SendResult("draw", player, g.Id)
 
 				return
 			}
 			if opponent.Choice == PAPER {
-				player.SendResult("lose", opponent)
-				opponent.SendResult("win", player)
+				player.SendResult("lose", opponent, g.Id)
+				opponent.SendResult("win", player, g.Id)
 
 				return
 			}
 			if opponent.Choice == SCISSORS {
-				player.SendResult("win", opponent)
-				opponent.SendResult("lose", player)
+				player.SendResult("win", opponent, g.Id)
+				opponent.SendResult("lose", player, g.Id)
 
 				return
 			}
@@ -247,20 +257,20 @@ func (g Game) handlePlayerMessage(player *User) {
 
 		if player.Choice == PAPER {
 			if opponent.Choice == ROCK {
-				player.SendResult("win", opponent)
-				opponent.SendResult("lose", player)
+				player.SendResult("win", opponent, g.Id)
+				opponent.SendResult("lose", player, g.Id)
 
 				return
 			}
 			if opponent.Choice == PAPER {
-				player.SendResult("draw", opponent)
-				opponent.SendResult("draw", player)
+				player.SendResult("draw", opponent, g.Id)
+				opponent.SendResult("draw", player, g.Id)
 
 				return
 			}
 			if opponent.Choice == SCISSORS {
-				player.SendResult("lose", opponent)
-				opponent.SendResult("win", player)
+				player.SendResult("lose", opponent, g.Id)
+				opponent.SendResult("win", player, g.Id)
 
 				return
 			}
@@ -268,20 +278,20 @@ func (g Game) handlePlayerMessage(player *User) {
 
 		if player.Choice == SCISSORS {
 			if opponent.Choice == ROCK {
-				player.SendResult("lose", opponent)
-				opponent.SendResult("win", player)
+				player.SendResult("lose", opponent, g.Id)
+				opponent.SendResult("win", player, g.Id)
 
 				return
 			}
 			if opponent.Choice == PAPER {
-				player.SendResult("win", opponent)
-				opponent.SendResult("lose", player)
+				player.SendResult("win", opponent, g.Id)
+				opponent.SendResult("lose", player, g.Id)
 
 				return
 			}
 			if opponent.Choice == SCISSORS {
-				player.SendResult("draw", opponent)
-				opponent.SendResult("draw", player)
+				player.SendResult("draw", opponent, g.Id)
+				opponent.SendResult("draw", player, g.Id)
 
 				return
 			}
@@ -307,7 +317,7 @@ func (g Game) handlePlayerMessage(player *User) {
 	}
 }
 
-func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
+func (game *Game) connectPlayerToGame(conn *websocket.Conn) error {
 	if game.Player1.Conn == nil {
 		if err := game.Player1.Connect(conn); err != nil {
 			return errors.New(err.Error())
@@ -337,4 +347,32 @@ func connectPlayerToGame(game *Game, conn *websocket.Conn) error {
 		return nil
 	}
 
+}
+
+func (game *Game) disconnectPlayer(username string) error {
+	if username == game.Player1.Nick {
+		game.Player1 = game.Player2
+		game.Player2 = nil
+
+		err1 := game.Player1.SendMessage("templates/main.tmpl", "wait", map[string]string{})
+		if err1 != nil {
+			return err1
+		}
+
+		return nil
+	}
+
+	if username == game.Player2.Nick {
+		game.Player2 = nil
+		if game.Player1 != nil {
+			err := game.Player1.SendMessage("templates/main.tmpl", "wait", map[string]string{})
+			if err != nil {
+				return err
+			}
+
+		}
+		return nil
+	}
+
+	return errors.New("Could not find player in game")
 }
