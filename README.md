@@ -26,6 +26,12 @@ Users should be able to:
 - Play Rock, Paper, Scissors against the user
 - Maintain the state of the score after refreshing the browser (TODO)
 
+### How to use
+
+For now the only way to use is to run it locally on your machine. To do so, you will need Go installed and you can run `make run` under the root directory. It will run on the port `:8080`.
+
+To play, you need to open at leat two diferent browsers. Create a game or join existing ones.
+
 ### Links
 
 (TODO)
