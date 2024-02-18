@@ -39,7 +39,25 @@
     {{ template "main" .}}
   {{ end}}
 
+  <div id="alert">
+  </div>
+
   <script src="../components/choice-button.js"></script>
+
+
+  <script>
+    const ALERT = document.getElementById("alert")
+    document.body.addEventListener("htmx:responseError", function(e) {
+        error = e.detail.xhr.response;
+        ALERT.innerHTML = error
+        ALERT.style.display = 'block'
+        setTimeout(() => {
+          ALERT.innerHTML = ''
+          ALERT.style.display = 'none'
+        }, 3000)
+    });
+  </script>
+
 </body>
 
 </html>

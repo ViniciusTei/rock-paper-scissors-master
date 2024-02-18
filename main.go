@@ -170,8 +170,13 @@ func (u User) SendResult(result string, opponent *User) {
 
 }
 
-func (g *Game) connectPlayer2(player *User) {
+func (g *Game) connectPlayer2(player *User) error {
+	if player.Conn != nil {
+		return errors.New("Player already connected")
+	}
+
 	g.Player2 = player
+	return nil
 }
 
 func createNewGame(player *User) Game {
@@ -195,6 +200,13 @@ func findGame(id int) *Game {
 	}
 
 	return &Games[id]
+}
+
+func (g Game) isGameEmpty(id int) bool {
+	if g.Player2 != nil {
+		return false
+	}
+	return true
 }
 
 func (g Game) opponentPlayer(username string) *User {
@@ -370,8 +382,23 @@ func main() {
 
 	r.GET("/join-game-form/:room", func(ctx *gin.Context) {
 		room := ctx.Param("room")
-		html := template.Must(template.ParseFiles("templates/main.tmpl"))
-		html.ExecuteTemplate(ctx.Writer, "gameform", gin.H{"join": true, "room": room})
+		gameId, atoiErr := strconv.Atoi(room)
+		if atoiErr != nil {
+			log.Println("Cannot find game room!")
+			return
+		}
+
+		var currentGame = findGame(gameId)
+
+		if currentGame.isGameEmpty(gameId) {
+			html := template.Must(template.ParseFiles("templates/main.tmpl"))
+			html.ExecuteTemplate(ctx.Writer, "gameform", gin.H{"join": true, "room": room})
+			return
+		} else {
+			ctx.String(403, "Game is full")
+			return
+		}
+
 	})
 
 	r.POST("/join-game/:room", func(ctx *gin.Context) {
@@ -386,7 +413,12 @@ func main() {
 		}
 
 		var currentGame = findGame(gameId)
-		currentGame.connectPlayer2(connected)
+
+		err := currentGame.connectPlayer2(connected)
+		if err != nil {
+			return
+		}
+
 		logger.Printf("\nUser [%s] has joined to game %d", currentGame.Player2.Nick, currentGame.Id)
 
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
