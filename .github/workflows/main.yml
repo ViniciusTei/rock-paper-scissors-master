@@ -20,8 +20,8 @@ jobs:
       - name: Build & Deploy
         env:
             PRIVATE_KEY: ${{ secrets.AWS_SECRET }}
-            HOSTNAME: ${{secrets.SSH_USER}}
-            USER_NAME: ${{secrets.SSH_HOST}}
+            HOSTNAME: ${{secrets.SSH_HOST}}
+            USER_NAME: ${{secrets.SSH_USER}}
       
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
