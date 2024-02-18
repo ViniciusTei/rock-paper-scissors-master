@@ -2,6 +2,8 @@
 
 This is a solution to the [Rock, Paper, Scissors challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/rock-paper-scissors-game-pTgwgvgH). But in this challenge I tried to focus on back-end with Go lang. Making a multiplayer online game of Rock, Paer, Scissors.
 
+![Preview](/design/desktop-preview.png "Preview")
+
 ## Table of contents
 
 - [Overview](#overview)
@@ -12,8 +14,6 @@ This is a solution to the [Rock, Paper, Scissors challenge on Frontend Mentor](h
   - [What I learned](#what-i-learned)
   - [Continued development](#continued-development)
 - [Author](#author)
-
-**Note: Delete this note and update the table of contents based on what sections you keep.**
 
 ## Overview
 
@@ -39,11 +39,10 @@ players have choosen their options the game show them the result.
 
 ### Built with
 
-- Semantic HTML5 markup
-- [HTMX](https://htmx.org/) - for client and server comunication
+- [HTMX](https://htmx.org/) - For client and server comunication
 - [Go](https://go.dev/) - Main development language
-- [Gin]([https://go.dev/](https://gin-gonic.com/docs/)) - For routing and server development
-- [Websocket]([https://go.dev/](https://github.com/gorilla/websocket)) - Real time comunication
+- [Gin]([https://go.dev/](https://gin-gonic.com/docs/) - For routing and server development
+- [Websocket]([https://go.dev/](https://github.com/gorilla/websocket) - For real time comunication
 
 ### What I learned
 
@@ -53,7 +52,7 @@ players have choosen their options the game show them the result.
 ### Continued development
 
 - [ ] Save to a Sqlite database user and game data
-- [ ] Deploy the internet
+- [ ] Deploy to the internet
 
 ## Author
 
