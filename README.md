@@ -41,8 +41,8 @@ players have choosen their options the game show them the result.
 
 - [HTMX](https://htmx.org/) - For client and server comunication
 - [Go](https://go.dev/) - Main development language
-- [Gin]([https://go.dev/](https://gin-gonic.com/docs/) - For routing and server development
-- [Websocket]([https://go.dev/](https://github.com/gorilla/websocket) - For real time comunication
+- [Gin](https://go.dev/](https://gin-gonic.com/docs/) - For routing and server development
+- [Websocket](https://go.dev/](https://github.com/gorilla/websocket) - For real time comunication
 
 ### What I learned
 
