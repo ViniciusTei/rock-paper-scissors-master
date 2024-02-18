@@ -62,7 +62,7 @@ func main() {
 			html.ExecuteTemplate(ctx.Writer, "gameform", gin.H{"join": true, "room": room})
 			return
 		} else {
-			ctx.String(403, "Game is full")
+			ctx.String(http.StatusForbidden, "Game is full")
 			return
 		}
 
