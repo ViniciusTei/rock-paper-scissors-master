@@ -3,7 +3,7 @@
     <p>You picked</p>
 
     <div class="choice {{ .choice }}">
-      <choice-button choice="{{ .choice }}"></choice-button>
+      <choice-button choice="{{ .choice }}" disabled></choice-button>
     </div>
   </div>
   
@@ -24,7 +24,7 @@
     <p>{{ .opponent }} picked</p>
 
     <div class="choice {{ .house }}">
-      <choice-button choice="{{ .house }}"></choice-button>
+      <choice-button choice="{{ .house }}" disabled></choice-button>
     </div>
   </div>
 </div>
