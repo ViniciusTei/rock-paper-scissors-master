@@ -2,7 +2,7 @@
 
 This is a solution to the [Rock, Paper, Scissors challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/rock-paper-scissors-game-pTgwgvgH). But in this challenge I tried to focus on back-end with Go lang. Making a multiplayer online game of Rock, Paer, Scissors.
 
-![Preview](/design/desktop-preview.png "Preview")
+![Preview](/design/desktop-preview.jpg)
 
 ## Table of contents
 
