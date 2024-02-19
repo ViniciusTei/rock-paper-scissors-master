@@ -7,7 +7,7 @@ class ChoiceButton extends HTMLElement {
       <form ws-send hx-trigger="click" ${disable ?? 'hx-disable'}>
         <div>
           <input type="hidden" name="choice" value="${choice}" />
-          <img src="./images/icon-${choice}.svg" alt="${choice}" />
+          <img src="images/icon-${choice}.svg" alt="${choice}" />
         </div>
       </form>
     `
