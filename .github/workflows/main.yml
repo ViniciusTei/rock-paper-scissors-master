@@ -15,8 +15,6 @@ jobs:
           known_hosts: 'deploy'
       - name: Adding Known Hosts
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-      - name: Deploy with rsync
-        run: rsync -avz ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ec2-user/rock-paper-scissors-master/
       - name: Build & Deploy
         env:
             PRIVATE_KEY: ${{ secrets.AWS_SECRET }}
@@ -28,5 +26,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               # Now we have got the access of EC2 and we will start the deploy .
               cd /home/ec2-user/rock-paper-scissors-master &&
+              git pull &&
               chmod +x ./deploy.sh && ./deploy.sh
               '
