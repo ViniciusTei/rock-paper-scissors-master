@@ -1,5 +1,5 @@
 echo "Killing current process"
-$PID=$(sudo lsof -i | grep rock | awk '{print $2}')
+$pid=$(sudo lsof -i | grep rock | awk '{print $2}')
 
 # Check if the PID is not empty and greater than 0
 if [[ -n $pid && $pid -gt 0 ]]; then
