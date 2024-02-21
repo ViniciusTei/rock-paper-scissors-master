@@ -102,7 +102,7 @@ func (u *User) SendTemplate(file string, data map[string]string) error {
 	return nil
 }
 
-func (u *User) SendMessage(file string, block string, data map[string]string) error {
+func (u *User) SendComponent(file string, block string, data map[string]string) error {
 	var htmlTemplate bytes.Buffer
 	tmpl := template.Must(template.ParseFiles(file))
 	if errExec := tmpl.ExecuteTemplate(&htmlTemplate, block, data); errExec != nil {
@@ -312,7 +312,7 @@ func (g Game) handlePlayerMessage(player *User) {
 			data["player2"] = opponent.Nick
 		}
 
-		errWS := player.SendMessage("templates/main.tmpl", "choice", data)
+		errWS := player.SendComponent("templates/main.tmpl", "choice", data)
 		if errWS != nil {
 			log.Println("Error sending websocket response")
 			return
@@ -335,14 +335,14 @@ func (game *Game) connectPlayerToGame(conn *websocket.Conn) error {
 		}
 
 		// send message to players that another player has connected to the game
-		errSendingMessage := game.Player1.SendMessage("templates/main.tmpl", "game", map[string]string{
+		errSendingMessage := game.Player1.SendComponent("templates/main.tmpl", "game", map[string]string{
 			"opponent": game.Player2.Nick,
 		})
 		if errSendingMessage != nil {
 			return errors.New(errSendingMessage.Error())
 		}
 
-		errSendingMessage2 := game.Player2.SendMessage("templates/main.tmpl", "game", map[string]string{
+		errSendingMessage2 := game.Player2.SendComponent("templates/main.tmpl", "game", map[string]string{
 			"opponent": game.Player1.Nick,
 		})
 		if errSendingMessage2 != nil {
@@ -359,7 +359,7 @@ func (game *Game) disconnectPlayer(username string) error {
 		game.Player1 = game.Player2
 		game.Player2 = nil
 
-		err1 := game.Player1.SendMessage("templates/main.tmpl", "wait", map[string]string{})
+		err1 := game.Player1.SendComponent("templates/main.tmpl", "wait", map[string]string{})
 		if err1 != nil {
 			return err1
 		}
@@ -370,7 +370,7 @@ func (game *Game) disconnectPlayer(username string) error {
 	if username == game.Player2.Nick {
 		game.Player2 = nil
 		if game.Player1 != nil {
-			err := game.Player1.SendMessage("templates/main.tmpl", "wait", map[string]string{})
+			err := game.Player1.SendComponent("templates/main.tmpl", "wait", map[string]string{})
 			if err != nil {
 				return err
 			}

@@ -125,7 +125,7 @@ func main() {
 			return
 		}
 
-		if errMsg := opponent.SendMessage("templates/main.tmpl", "play-again", map[string]string{
+		if errMsg := opponent.SendComponent("templates/main.tmpl", "play-again", map[string]string{
 			"room": currGame,
 			"user": opponent.Nick,
 		}); errMsg != nil {
@@ -165,7 +165,7 @@ func main() {
 
 		if opt == "yes" {
 			opponent := currentGame.opponentPlayer(currUser)
-			if errMsg := opponent.SendMessage("templates/main.tmpl", "game", map[string]string{
+			if errMsg := opponent.SendComponent("templates/main.tmpl", "game", map[string]string{
 				"opponent": currUser,
 			}); errMsg != nil {
 				ctx.String(http.StatusInternalServerError, "Error trying to notify opponent")
