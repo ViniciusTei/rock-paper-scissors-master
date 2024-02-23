@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
   <title>{{ .title }}</title>
-  <script 
+  <script
     src="https://unpkg.com/htmx.org@1.9.10"
     integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
     crossorigin="anonymous"
@@ -43,8 +43,8 @@
   </div>
   <script src="components/choice-button.js"></script>
   <script>
-    const ALERT = document.getElementById("alert")
     document.body.addEventListener("htmx:responseError", function(e) {
+        const ALERT = document.getElementById("alert")
         error = e.detail.xhr.response;
         ALERT.innerHTML = error
         ALERT.style.display = 'block'
@@ -52,7 +52,14 @@
           ALERT.innerHTML = ''
           ALERT.style.display = 'none'
         }, 3000)
-    });
+    })
+    document.body.addEventListener("htmx:configRequest", function(e) {
+      const originalUri = e.detail.path
+      const isDev = e.detail.headers['HX-Current-URL'].includes("localhost")
+      if (originalUri && isDev) {
+        e.detail.path = `/rock-paper-scissors${originalUri}`
+      }
+    })
   </script>
 
 </body>
