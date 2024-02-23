@@ -1,11 +1,11 @@
 echo "Killing current process"
-$pid=$(sudo lsof -i | grep rock | awk '{print $2}')
+$pid=$(sudo lsof -i -P | grep rock | awk '{print $2}')
 
 # Check if the PID is not empty and greater than 0
 if [[ -n $pid && $pid -gt 0 ]]; then
     echo "Stopping process with PID: $pid"
     # Use kill command to stop the process
-    sudo kill $pid
+    sudo kill -9 $pid
 
     # Check if the kill command was successful
     if [ $? -eq 0 ]; then
