@@ -20,9 +20,9 @@ jobs:
         uses: kielabokkie/ssh-key-and-known-hosts-action@v1
         with:
           ssh-private-key: ${{ secrets.AWS_SECRET }}
-          ssh-host: ${{ secrets.AWS_HOST }}
+          ssh-host: ${{ secrets.AWS_HOSTS }}
 
       - name: Deploy
         env:
-          HOSTINGER_REMOTE_SERVER_IP: ${{ secrets.AWS_HOST }}
+          HOSTINGER_REMOTE_SERVER_IP: ${{ secrets.AWS_HOSTS }}
         run: make deploy
