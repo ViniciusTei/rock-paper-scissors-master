@@ -24,5 +24,6 @@ jobs:
 
       - name: Deploy
         env:
-          HOSTINGER_REMOTE_SERVER_IP: ${{ secrets.AWS_HOSTS }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: make deploy
