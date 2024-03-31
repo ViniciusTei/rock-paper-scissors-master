@@ -5,7 +5,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/home/ec2-user/rock-paper-scissors-master/dist/server
+ExecStart=/home/ec2-user/rock-paper-scissors-master/server
 
 [Install]
 WantedBy=multi-user.target

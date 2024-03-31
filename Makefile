@@ -8,7 +8,7 @@ build:
 	GOOS=linux GOARCH=amd64 go build -o dist/server
 
 send-exe-to-remote-server:
-	rsync dist/server $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/dist/
+	rsync dist/server $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/
 
 send-service-file-to-remote-server:
 	rsync http-server.service $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/
