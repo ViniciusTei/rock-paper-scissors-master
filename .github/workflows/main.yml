@@ -8,24 +8,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          key: ${{ secrets.AWS_SECRET }}
-          known_hosts: 'deploy'
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-      - name: Build & Deploy
+          go-version: '1.22.1'
+
+      - name: Set up Keys
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1
+        with:
+          ssh-private-key: ${{ secrets.AWS_SECRET }}
+          ssh-host: ${{ secrets.AWS_HOST }}
+
+      - name: Deploy
         env:
-            PRIVATE_KEY: ${{ secrets.AWS_SECRET }}
-            HOSTNAME: ${{secrets.SSH_HOST}}
-            USER_NAME: ${{secrets.SSH_USER}}
-      
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-              # Now we have got the access of EC2 and we will start the deploy .
-              cd /home/ec2-user/rock-paper-scissors-master &&
-              git pull &&
-              chmod +x ./deploy.sh && ./deploy.sh
-              '
+          HOSTINGER_REMOTE_SERVER_IP: ${{ secrets.AWS_HOST }}
+        run: make deploy
