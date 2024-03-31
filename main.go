@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -32,31 +31,24 @@ func main() {
 	logger := log.Default()
 	r := gin.Default()
 
+	r.Static("/images", "./images")
+	r.Static("/components", "./components")
+	r.Static("/styles", "./styles")
 	r.LoadHTMLGlob("templates/*")
 
-	path := "/"
-	if os.Getenv("GIN_MODE") == "release" {
-		path = path + "/rock-paper-scissors"
-	}
-	grp := r.Group(path)
-
-	grp.Static("/images", "./images")
-	grp.Static("/components", "./components")
-	grp.Static("/styles", "./styles")
-
-	grp.GET("/", func(ctx *gin.Context) {
+	r.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Rock Paper and Sissors Master",
 			"rooms": Games,
 		})
 	})
 
-	grp.GET("/create-game-form", func(ctx *gin.Context) {
+	r.GET("/create-game-form", func(ctx *gin.Context) {
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
 		html.ExecuteTemplate(ctx.Writer, "gameform", nil)
 	})
 
-	grp.GET("/join-game-form/:room", func(ctx *gin.Context) {
+	r.GET("/join-game-form/:room", func(ctx *gin.Context) {
 		room := ctx.Param("room")
 		gameId, atoiErr := strconv.Atoi(room)
 		if atoiErr != nil {
@@ -77,7 +69,7 @@ func main() {
 
 	})
 
-	grp.POST("/join-game/:room", func(ctx *gin.Context) {
+	r.POST("/join-game/:room", func(ctx *gin.Context) {
 		username := ctx.PostForm("nickname")
 		var connected = createUser(username)
 
@@ -109,7 +101,7 @@ func main() {
 		})
 	})
 
-	grp.GET("/play-again", func(ctx *gin.Context) {
+	r.GET("/play-again", func(ctx *gin.Context) {
 		currGame := ctx.Query("room")
 		currUser := ctx.Query("user")
 
@@ -147,7 +139,7 @@ func main() {
 		return
 	})
 
-	grp.GET("/play-again/:opt", func(ctx *gin.Context) {
+	r.GET("/play-again/:opt", func(ctx *gin.Context) {
 		opt := ctx.Param("opt")
 		currGame := ctx.Query("room")
 		currUser := ctx.Query("user")
@@ -191,7 +183,7 @@ func main() {
 		ctx.String(http.StatusBadRequest, "Must chose between Yes or No")
 	})
 
-	grp.GET("/quit-game", func(ctx *gin.Context) {
+	r.GET("/quit-game", func(ctx *gin.Context) {
 		currGame := ctx.Query("room")
 		currUser := ctx.Query("user")
 		gameId, atoiErr := strconv.Atoi(currGame)
@@ -214,12 +206,12 @@ func main() {
 		})
 	})
 
-	grp.GET("/start-game", func(ctx *gin.Context) {
+	r.GET("/start-game", func(ctx *gin.Context) {
 		html := template.Must(template.ParseFiles("templates/main.tmpl"))
 		html.ExecuteTemplate(ctx.Writer, "choose", gin.H{})
 	})
 
-	grp.POST("/create-game", func(ctx *gin.Context) {
+	r.POST("/create-game", func(ctx *gin.Context) {
 		username := ctx.PostForm("nickname")
 
 		var connected = createUser(username)
@@ -233,7 +225,7 @@ func main() {
 		})
 	})
 
-	grp.GET("/gameroom", func(ctx *gin.Context) {
+	r.GET("/gameroom", func(ctx *gin.Context) {
 		conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 
 		if err != nil {
