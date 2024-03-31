@@ -58,7 +58,6 @@
       const isDev = e.detail.headers['HX-Current-URL'].includes("localhost")
       if (originalUri && !isDev) {
         e.detail.path = `/rock-paper-scissors${originalUri}`
-        document.location.hostname = location.hostname + '/rock-paper-scissors'
       }
     })
     document.body.addEventListener("htmx:wsConnecting", function (e) {
