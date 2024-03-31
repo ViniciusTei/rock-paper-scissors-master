@@ -25,5 +25,5 @@ jobs:
       - name: Deploy
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_HOST: ${{ secrets.AWS_HOSTS }}
         run: make deploy
