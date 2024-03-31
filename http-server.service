@@ -1,0 +1,17 @@
+[Unit]
+Description=HTTP WSS Server Rock Paper Scissors
+
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=ec2-user
+WorkingDirectory=/ec2-user
+ExecStart=/ec2-user/rock-paper-scissors-master
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
