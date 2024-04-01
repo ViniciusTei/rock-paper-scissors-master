@@ -53,16 +53,6 @@
           ALERT.style.display = 'none'
         }, 3000)
     })
-    document.body.addEventListener("htmx:configRequest", function(e) {
-      const originalUri = e.detail.path
-      const isDev = e.detail.headers['HX-Current-URL'].includes("localhost")
-      if (originalUri && !isDev) {
-        e.detail.path = `/rock-paper-scissors${originalUri}`
-      }
-    })
-    document.body.addEventListener("htmx:wsConnecting", function (e) {
-      console.log('ws', e)
-    })
   </script>
 
 </body>
