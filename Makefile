@@ -11,7 +11,7 @@ send-exe-to-remote-server:
 	rsync dist/server $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/
 
 send-templates-to-remote-server:
-	rsync -a -P templates $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/templates
+	rsync -a -P templates $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/
 
 send-service-file-to-remote-server:
 	rsync http-server.service $(SSH_USER)@$(SSH_HOST):~/rock-paper-scissors-master/
